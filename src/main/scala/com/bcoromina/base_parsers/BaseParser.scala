@@ -2,6 +2,8 @@ package com.bcoromina.base_parsers
 
 import com.bcoromina.base_parsers.BaseParser.Parser
 
+import scala.annotation.tailrec
+
 object BaseParser:
   type Parser[T] = (String, Int) => Option[(T, Int)]
 
@@ -9,6 +11,19 @@ object BaseParser:
     (str, pos) => if (str.startsWith(token, pos))
       Some(jsonValue, pos + token.length)
     else None
+
+  val numberParser : Parser[Int] =
+    (str, pos) =>
+      if(str(pos).isDigit || str(pos) == '-'){
+        @tailrec
+        def loop(i: Integer, acc: List[Char]): List[Char] =
+          if(i == str.length || !str(i).isDigit )
+            acc
+          else
+            loop(i + 1, str(i) :: acc)
+        val rslt = loop(pos +1, str(pos) :: Nil)
+        Some((rslt.reverse.mkString.toInt, pos + rslt.length))
+      }else None
 
 object ParserCombinators:
   def or[A,B](pa: Parser[A], pb: Parser[B]): Parser[A|B] =

@@ -54,4 +54,28 @@ class BaseParserSpec extends AnyFunSpec with Matchers{
       combinedParser("nomatch", 0) shouldBe None
     }
   }
+
+  describe("number parser"){
+    it("one character positive number"){
+      val str = "2"
+      BaseParser.numberParser(str,0) should contain (2,1)
+    }
+    it("multiple character positive number. End string"){
+      val str = "1234"
+      BaseParser.numberParser(str, 0) should contain(1234, 4)
+    }
+    it("multiple character positive number. End of Number"){
+      val str = "1234notanumber"
+      BaseParser.numberParser(str, 0) should contain(1234, 4)
+    }
+    it("negative number"){
+      val str = "-23"
+      BaseParser.numberParser(str, 0) should contain(-23, 3)
+    }
+
+    it("negative number offset") {
+      val str = "pp-23hola"
+      BaseParser.numberParser(str, 2) should contain(-23, 5)
+    }
+  }
 }
