@@ -14,7 +14,7 @@ object BaseParser:
 
   val numberParser : Parser[Int] =
     (str, pos) =>
-      if(str(pos).isDigit || str(pos) == '-'){
+      if(str(pos).isDigit || str(pos) == '-')
         @tailrec
         def loop(i: Integer, acc: List[Char]): List[Char] =
           if(i == str.length || !str(i).isDigit )
@@ -23,7 +23,7 @@ object BaseParser:
             loop(i + 1, str(i) :: acc)
         val rslt = loop(pos +1, str(pos) :: Nil)
         Some((rslt.reverse.mkString.toInt, pos + rslt.length))
-      }else None
+      else None
 
 object ParserCombinators:
   def or[A,B](pa: Parser[A], pb: Parser[B]): Parser[A|B] =
