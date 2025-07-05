@@ -1,8 +1,8 @@
-## sbt project compiled with Scala 3
+Json parser based on parser combinators
 
-### Usage
+Steps:
 
-This is a normal sbt project. You can compile code with `sbt compile`, run it with `sbt run`, and `sbt console` will start a Scala 3 REPL.
-
-For more information on the sbt-dotty plugin, see the
-[scala3-example-project](https://github.com/scala/scala3-example-project/blob/main/README.md).
+- Model Json domain using ADT following https://www.json.org/json-en.html
+  It will allow us to represent a parsed json string as AST. JsonValue.scala
+- Define the Parser class and combinators
+- Build primitive json parsers and more complex ones composing them. JsonParser.scala
