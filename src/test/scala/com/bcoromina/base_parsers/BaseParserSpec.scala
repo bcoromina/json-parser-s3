@@ -39,5 +39,19 @@ class BaseParserSpec extends AnyFunSpec with Matchers{
     }
   }
 
+  describe("andThen combinator"){
+    case class A()
+    case class B()
+    val combinedParser = BaseParser.tokenParser("a", A()) andThen BaseParser.tokenParser("b", B())
 
+    it("should match when both tokens"){
+      combinedParser("ab", 0) should contain ((A(),B()),2)
+    }
+    it("should fail when matches the first but not the second"){
+      combinedParser("ac", 0) shouldBe None
+    }
+    it("should fail when no match"){
+      combinedParser("nomatch", 0) shouldBe None
+    }
+  }
 }
