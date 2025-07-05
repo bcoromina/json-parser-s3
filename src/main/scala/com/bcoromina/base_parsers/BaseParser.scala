@@ -7,12 +7,12 @@ import scala.annotation.tailrec
 object BaseParser:
   type Parser[T] = (String, Int) => Option[(T, Int)]
 
-  def tokenParser[T](token: String, jsonValue: T): Parser[T] =
+  def tokenParser[T](token: String, astValue: T): Parser[T] =
     (str, pos) => if (str.startsWith(token, pos))
-      Some(jsonValue, pos + token.length)
+      Some(astValue, pos + token.length)
     else None
 
-  val numberParser : Parser[Int] =
+  val baseNumberParser : Parser[Int] =
     (str, pos) =>
       if(str(pos).isDigit || str(pos) == '-')
         @tailrec
@@ -44,3 +44,9 @@ extension [A](pa: Parser[A])
 
 extension [A,B](pa: Parser[A])
   infix def andThen(pb: Parser[B]): Parser[(A,B)] = ParserCombinators.andThen(pa,pb)
+
+extension [A,B](pa: Parser[A])
+  infix def map(f: A => B): Parser[B] =
+    (str, pos) => pa(str, pos) match
+      case Some((a,p)) => Some((f(a), p))
+      case None => None

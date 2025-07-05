@@ -58,24 +58,38 @@ class BaseParserSpec extends AnyFunSpec with Matchers{
   describe("number parser"){
     it("one character positive number"){
       val str = "2"
-      BaseParser.numberParser(str,0) should contain (2,1)
+      BaseParser.baseNumberParser(str,0) should contain (2,1)
     }
     it("multiple character positive number. End string"){
       val str = "1234"
-      BaseParser.numberParser(str, 0) should contain(1234, 4)
+      BaseParser.baseNumberParser(str, 0) should contain(1234, 4)
     }
     it("multiple character positive number. End of Number"){
       val str = "1234notanumber"
-      BaseParser.numberParser(str, 0) should contain(1234, 4)
+      BaseParser.baseNumberParser(str, 0) should contain(1234, 4)
     }
     it("negative number"){
       val str = "-23"
-      BaseParser.numberParser(str, 0) should contain(-23, 3)
+      BaseParser.baseNumberParser(str, 0) should contain(-23, 3)
     }
 
     it("negative number offset") {
       val str = "pp-23hola"
-      BaseParser.numberParser(str, 2) should contain(-23, 5)
+      BaseParser.baseNumberParser(str, 2) should contain(-23, 5)
     }
+  }
+
+  describe("map function"){
+    case object A
+    val mappedParser = BaseParser.tokenParser("1", A).map(_ => "hello")
+    it("map a match"){
+      mappedParser("1", 0) should contain (("hello", 1))
+    }
+
+    it("map a not match") {
+      mappedParser("a", 0) shouldBe None
+    }
+
+
   }
 }
