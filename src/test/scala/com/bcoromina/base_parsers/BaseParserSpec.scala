@@ -89,7 +89,26 @@ class BaseParserSpec extends AnyFunSpec with Matchers{
     it("map a not match") {
       mappedParser("a", 0) shouldBe None
     }
+  }
 
-
+  describe("repetition combinator"){
+    case object A
+    case object B
+    val token = "token"
+    val tokenParser = BaseParser.tokenParser(token, A)
+    it("repeated token"){
+      tokenParser.rep("tokentokentoken",0) should contain (List(A,A,A), 15)
+    }
+    it("repeated token with padding") {
+      tokenParser.rep("tokentokentokenpadding", 0) should contain(List(A, A, A), 15)
+    }
+    it("composed rep"){
+      val composedParser = (tokenParser andThen BaseParser.tokenParser(",", B)).rep
+      composedParser("token,token,token,",0) should contain(List((A,B), (A,B), (A,B)), 18)
+    }
+    it("composed rep plus") {
+      val composedParser = (tokenParser andThen BaseParser.tokenParser(",", B)).rep
+      composedParser("token,token,token,token", 0) should contain(List((A, B), (A, B), (A, B)), 18)
+    }
   }
 }

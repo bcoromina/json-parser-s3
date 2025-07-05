@@ -10,11 +10,12 @@ object BaseParser:
   def tokenParser[T](token: String, astValue: T): Parser[T] =
     (str, pos) => if (str.startsWith(token, pos))
       Some(astValue, pos + token.length)
-    else None
+    else
+      None
 
   val baseNumberParser : Parser[Int] =
     (str, pos) =>
-      if(str(pos).isDigit || str(pos) == '-')
+      if(pos < str.length && ( str(pos).isDigit || str(pos) == '-'))
         @tailrec
         def loop(i: Integer, acc: List[Char]): List[Char] =
           if(i == str.length || !str(i).isDigit )
@@ -28,7 +29,7 @@ object BaseParser:
 object ParserCombinators:
   def or[A,B](pa: Parser[A], pb: Parser[B]): Parser[A|B] =
     (str, pos) => pa(str,pos) match
-      case r@Some((a,pos)) => r
+      case r@Some((a,p)) => r
       case None => pb(str,pos)
 
   def andThen[A,B](pa: Parser[A], pb: Parser[B]): Parser[(A,B)] =
@@ -45,8 +46,19 @@ extension [A](pa: Parser[A])
 extension [A,B](pa: Parser[A])
   infix def andThen(pb: Parser[B]): Parser[(A,B)] = ParserCombinators.andThen(pa,pb)
 
-extension [A,B](pa: Parser[A])
-  infix def map(f: A => B): Parser[B] =
+extension [A](pa: Parser[A])
+  infix def map[B](f: A => B): Parser[B] =
     (str, pos) => pa(str, pos) match
       case Some((a,p)) => Some((f(a), p))
       case None => None
+
+extension [A](p: Parser[A])
+  def rep: Parser[List[A]] =
+    (input, pos) =>
+      @tailrec
+      def loop(acc: List[A], currentPos: Int): Option[(List[A], Int)] =
+        p(input, currentPos) match
+          case Some((a, nextPos)) => loop(acc :+ a, nextPos)
+          case None               => Some((acc, currentPos))
+
+      loop(Nil, pos)

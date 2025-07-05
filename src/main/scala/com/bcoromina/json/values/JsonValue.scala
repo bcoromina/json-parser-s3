@@ -1,4 +1,4 @@
-package com.bcoromina.json
+package com.bcoromina.json.values
 
 import scala.collection.immutable.ListMap
 
