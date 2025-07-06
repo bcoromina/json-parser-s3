@@ -10,25 +10,24 @@ object JsonParser:
   val booleanParser: Parser[JsonBoolean] = trueParser or falseParser
   val numberParser: Parser[JsonValue] = baseNumberParser.map(n => JsonNumber(n.toString))
 
+  //recursive parser definition
+  val elementParser = BaseParser.defer(numberParser or booleanParser or arrayParser)
+
+  // Array
   val openArrayParser: Parser[JsonValue] = tokenParser("[", JsonOpenArray)
   val closeArrayParser: Parser[JsonValue] = tokenParser("]", JsonCloseArray)
 
   val arraySeparationParser: Parser[JsonValue] = tokenParser(",", JsonElementSep)
 
-  val arrayElement = numberParser or booleanParser
-  
-  val contentRep = (arrayElement andThen arraySeparationParser).rep.map(_.map(_._1))
-  val arrContent: Parser[List[JsonValue]] =
-    (contentRep andThen arrayElement)
-      .map{
-        case (l,e) => l ++ List(e)
-      }
-  val nonEmptyArrayParser: Parser[JsonArray] = (openArrayParser andThen arrContent andThen closeArrayParser)
-    .map{
-      case ((_,c),_) => JsonArray(c)
-    }
+  val contentRep: Parser[List[JsonValue]] = (elementParser <* arraySeparationParser).rep
 
-   val emptyArrayParser = (openArrayParser andThen closeArrayParser)
+  val arrContent: Parser[List[JsonValue]] =
+    (contentRep andThen elementParser.list).combineResult
+
+  val nonEmptyArrayParser: Parser[JsonArray] = (
+    openArrayParser *> arrContent <* closeArrayParser).map(JsonArray.apply)
+
+  val emptyArrayParser = (openArrayParser andThen closeArrayParser)
      .map( _ => JsonArray(Nil))
    
   val arrayParser = emptyArrayParser or nonEmptyArrayParser

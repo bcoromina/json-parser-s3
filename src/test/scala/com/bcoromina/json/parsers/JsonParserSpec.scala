@@ -53,5 +53,20 @@ class JsonParserSpec extends AnyFunSpec with Matchers {
       )
       JsonParser.arrayParser("[true,false,true]", 0) should contain(expectedAst, 17)
     }
+    
+    it("nested arrays"){
+      val expectedAst = JsonArray(
+        List(
+          JsonBoolean(true),
+          JsonArray(
+            JsonNumber("1") ::
+              JsonNumber("2") ::
+              JsonNumber("3") :: Nil
+          ),
+          JsonBoolean(false),
+        )
+      )
+      JsonParser.arrayParser("[true,[1,2,3],false]", 0) should contain(expectedAst, 20)
+    }
   }
 }
