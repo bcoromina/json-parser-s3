@@ -1,7 +1,7 @@
 package com.bcoromina.json.parsers
 
 import com.bcoromina.json.JsonParser
-import com.bcoromina.json.values.{JsonArray, JsonBoolean, JsonNumber, JsonOpenArray}
+import com.bcoromina.json.values.{JsonArray, JsonBoolean, JsonNumber, JsonOpenArray, JsonString}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -53,7 +53,7 @@ class JsonParserSpec extends AnyFunSpec with Matchers {
       )
       JsonParser.arrayParser("[true,false,true]", 0) should contain(expectedAst, 17)
     }
-    
+
     it("nested arrays"){
       val expectedAst = JsonArray(
         List(
@@ -67,6 +67,12 @@ class JsonParserSpec extends AnyFunSpec with Matchers {
         )
       )
       JsonParser.arrayParser("[true,[1,2,3],false]", 0) should contain(expectedAst, 20)
+    }
+  }
+
+  describe("string parser"){
+    it("can parse alphanumeric string"){
+      JsonParser.stringParser("\"hola123\"",0) should contain ( JsonString("hola123"), 9)
     }
   }
 }

@@ -8,11 +8,13 @@ object BaseParser:
   type Parser[T] = (String, Int) => Option[(T, Int)]
 
   def tokenParser[T](token: String, astValue: T): Parser[T] =
-    (str, pos) => if (str.startsWith(token, pos))
+    (str, pos) => if (matchToken(str, token, pos))
       Some(astValue, pos + token.length)
     else
       None
 
+  def matchToken(str: String, token: String, pos: Int): Boolean = str.startsWith(token, pos)
+  
   val baseNumberParser : Parser[Int] =
     (str, pos) =>
       if(pos < str.length && ( str(pos).isDigit || str(pos) == '-'))
@@ -66,7 +68,7 @@ extension [A](pa: Parser[A])
   def list: Parser[List[A]] = pa.map(_ :: Nil)
 
 extension [A](pa: Parser[(List[A], List[A])])
-  def combineResult: Parser[List[A]] = pa.map(r => r._1 ++ r._2) 
+  def combineResult: Parser[List[A]] = pa.map(r => r._1 ++ r._2)
 
 extension [A](pa: Parser[A])
   infix def map[B](f: A => B): Parser[B] =

@@ -2,7 +2,9 @@ package com.bcoromina.json
 
 import com.bcoromina.base_parsers.BaseParser.*
 import com.bcoromina.base_parsers.*
-import com.bcoromina.json.values.{JsonArray, JsonBoolean, JsonCloseArray, JsonElementSep, JsonNumber, JsonOpenArray, JsonValue}
+import com.bcoromina.json.values.{JsonArray, JsonBoolean, JsonCloseArray, JsonElementSep, JsonNumber, JsonOpenArray, JsonString, JsonValue}
+
+import scala.annotation.tailrec
 
 object JsonParser:
   private val trueParser: Parser[JsonBoolean] = tokenParser("true", JsonBoolean(true))
@@ -31,4 +33,20 @@ object JsonParser:
      .map( _ => JsonArray(Nil))
    
   val arrayParser = emptyArrayParser or nonEmptyArrayParser
+
+  // string
+  val stringParser: Parser[JsonValue] =
+    (str, pos) =>
+      if(matchToken(str, "\"", pos))
+        @tailrec
+        def loop(s: String, i: Int, acc: List[Char]): Option[(JsonValue,Int)] =
+          if(s.length == i ) None
+          else
+            s(i) match
+              case '\"' =>
+                Some((JsonString(acc.mkString), i+1))
+              case c =>
+                loop(s, i + 1, acc :+ c)
+        loop(str,pos + 1, Nil)
+      else None
 
