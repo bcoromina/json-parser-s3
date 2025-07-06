@@ -72,7 +72,7 @@ object JsonParser:
   private val objMultElementParser: Parser[JsonObject] =
     (openObjectParser *> multipleElementContent <* closeObjectParser
     ).map { r =>
-      JsonObject(ListMap(r.map { case (JsonString(value), v) => (value, v) }*))
+      JsonObject(ListMap(r.collect { case (JsonString(value), v) => (value, v) }*))
     }
 
   private val emptyObjectParser: Parser[JsonObject] =
