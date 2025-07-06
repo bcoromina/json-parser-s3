@@ -13,35 +13,35 @@ object JsonParser:
 
   private val trueParser: Parser[JsonBoolean] = tokenParser("true", JsonBoolean(true))
   private val falseParser: Parser[JsonBoolean] = tokenParser("false", JsonBoolean(false))
-  val booleanParser: Parser[JsonBoolean] = trueParser or falseParser
-  val numberParser: Parser[JsonValue] = baseNumberParser.map(n => JsonNumber(n.toString))
+  private val booleanParser: Parser[JsonBoolean] = trueParser or falseParser
+  private val numberParser: Parser[JsonValue] = baseNumberParser.map(n => JsonNumber(n.toString))
 
   //recursive parser definition
-  val elementParser = BaseParser.defer(
+  private val elementParser = BaseParser.defer(
     numberParser or booleanParser or arrayParser or objectParser or stringParser or objectParser
   )
 
   // Array
-  val openArrayParser: Parser[JsonValue] = tokenParser("[", JsonOpenArray)
-  val closeArrayParser: Parser[JsonValue] = tokenParser("]", JsonCloseArray)
+  private val openArrayParser: Parser[JsonValue] = tokenParser("[", JsonOpenArray)
+  private val closeArrayParser: Parser[JsonValue] = tokenParser("]", JsonCloseArray)
 
-  val commaSepParser: Parser[JsonValue] = tokenParser(",", JsonElementSep)
+  private val commaSepParser: Parser[JsonValue] = tokenParser(",", JsonElementSep)
 
-  val contentRep: Parser[List[JsonValue]] = (elementParser <* commaSepParser).rep
+  private val contentRep: Parser[List[JsonValue]] = (elementParser <* commaSepParser).rep
 
-  val arrContent: Parser[List[JsonValue]] =
+  private val arrContent: Parser[List[JsonValue]] =
     (contentRep andThen elementParser.list).combineResult
 
-  val nonEmptyArrayParser: Parser[JsonArray] = (
+  private val nonEmptyArrayParser: Parser[JsonArray] = (
     openArrayParser *> arrContent <* closeArrayParser).map(JsonArray.apply)
 
-  val emptyArrayParser = (openArrayParser andThen closeArrayParser)
+  private val emptyArrayParser = (openArrayParser andThen closeArrayParser)
      .map( _ => JsonArray(Nil))
-   
-  val arrayParser = emptyArrayParser or nonEmptyArrayParser
+
+  private val arrayParser = emptyArrayParser or nonEmptyArrayParser
 
   // string
-  val stringParser: Parser[JsonValue] =
+  private val stringParser: Parser[JsonValue] =
     (str, pos) =>
       if(matchToken(str, "\"", pos))
         @tailrec
@@ -57,26 +57,25 @@ object JsonParser:
       else None
 
   // object
-  val openObjectParser: Parser[JsonValue] = tokenParser("{", JsonOpenObject)
-  val closeObjectParser: Parser[JsonValue] = tokenParser("}", JsonCloseObject)
+  private val openObjectParser: Parser[JsonValue] = tokenParser("{", JsonOpenObject)
+  private val closeObjectParser: Parser[JsonValue] = tokenParser("}", JsonCloseObject)
 
-  val objectSepParser = tokenParser(":", JsonElementSep)
+  private val objectSepParser = tokenParser(":", JsonElementSep)
 
-  val oneElementContent: Parser[(JsonValue,JsonValue)] = stringParser <* objectSepParser andThen elementParser
-  val objOneElementParser: Parser[JsonObject] =
+  private val oneElementContent: Parser[(JsonValue,JsonValue)] = stringParser <* objectSepParser andThen elementParser
+  private val objOneElementParser: Parser[JsonObject] =
     (openObjectParser *>
       oneElementContent
       <* closeObjectParser).map{case (JsonString(value),v) => JsonObject(ListMap((value,v)))}
 
-  val multipleElementContent: Parser[List[(JsonValue, JsonValue)]] = ((oneElementContent <* commaSepParser).rep andThen oneElementContent.list).combineResult
-  val objMultElementParser: Parser[JsonObject] =
+  private val multipleElementContent: Parser[List[(JsonValue, JsonValue)]] = ((oneElementContent <* commaSepParser).rep andThen oneElementContent.list).combineResult
+  private val objMultElementParser: Parser[JsonObject] =
     (openObjectParser *> multipleElementContent <* closeObjectParser
     ).map { r =>
       JsonObject(ListMap(r.map { case (JsonString(value), v) => (value, v) }*))
     }
 
-  val emptyObjectParser: Parser[JsonObject] =
+  private val emptyObjectParser: Parser[JsonObject] =
     (openObjectParser andThen closeObjectParser).map(_ => JsonObject(ListMap.empty))
 
-  val objectParser: Parser[JsonValue] = emptyObjectParser or objOneElementParser or objMultElementParser
-
+  private val objectParser: Parser[JsonValue] = emptyObjectParser or objOneElementParser or objMultElementParser
