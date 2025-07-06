@@ -9,16 +9,16 @@ class JsonParserSpec extends AnyFunSpec with Matchers {
   describe("a boolean parser"){
     it("should parse a true"){
       val str = "true"
-      JsonParser.parseBoolean(str, 0) should contain ((JsonBoolean(true), "true".length))
+      JsonParser.booleanParser(str, 0) should contain ((JsonBoolean(true), "true".length))
     }
     it("should parse a false") {
       val str = "false"
-      JsonParser.parseBoolean(str, 0) should contain ((JsonBoolean(false), "false".length))
+      JsonParser.booleanParser(str, 0) should contain ((JsonBoolean(false), "false".length))
     }
 
     it("should fail when no boolean") {
       val str = "randomStr"
-      JsonParser.parseBoolean(str, 0) shouldBe None
+      JsonParser.booleanParser(str, 0) shouldBe None
     }
   }
   describe("array parser"){
@@ -42,6 +42,16 @@ class JsonParserSpec extends AnyFunSpec with Matchers {
       )
 
       JsonParser.arrayParser("[1,2,3]", 0) should contain(expectedAst, 7)
+    }
+    it("boolean array"){
+      val expectedAst = JsonArray(
+        List(
+          JsonBoolean(true),
+          JsonBoolean(false),
+          JsonBoolean(true),
+        )
+      )
+      JsonParser.arrayParser("[true,false,true]", 0) should contain(expectedAst, 17)
     }
   }
 }
