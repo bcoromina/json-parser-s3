@@ -39,14 +39,13 @@ object JsonParser:
      .map( _ => JsonArray(Nil))
 
   private val arrayParser = emptyArrayParser or nonEmptyArrayParser
-
-  // string
+  
   private val stringParser: Parser[JsonValue] =
     (str, pos) =>
       if(matchToken(str, "\"", pos))
         @tailrec
         def loop(s: String, i: Int, acc: List[Char]): Option[(JsonValue,Int)] =
-          if(s.length == i ) None
+          if(s.length == i ) None // No closing "
           else
             s(i) match
               case '\"' =>
