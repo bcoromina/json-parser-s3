@@ -27,14 +27,9 @@ object BaseParser:
         val rslt = loop(pos +1, str(pos) :: Nil)
         Some((rslt.reverse.mkString.toInt, pos + rslt.length))
       else None
-
-  /*
-  The argument p is by-name (=> Parser[T]), so its evaluation is deferred.
-  We store it in a lazy val cached, so it's only evaluated once, the first time it's needed.
-  The returned parser simply delegates to cached.*/
+  
   def defer[T](p: => Parser[T]): Parser[T] =
-    lazy val cached: Parser[T] = p
-    (input: String, pos: Int) => cached(input, pos)
+    (input: String, pos: Int) => p(input, pos)
 
 object ParserCombinators:
   def or[A,B](pa: Parser[A], pb: Parser[B]): Parser[A|B] =
